@@ -1,0 +1,468 @@
+/* Monaco Editor Dark Game Theme */
+
+.monaco-editor {
+  --monaco-bg: #121212;
+  --monaco-foreground: #FFFFFF;
+  --monaco-cursor: #00E5FF;
+  --monaco-selection-bg: rgba(138, 43, 226, 0.4);
+  --monaco-line-number: #666666;
+  --monaco-line-highlight: rgba(138, 43, 226, 0.1);
+  --monaco-widget-bg: #1E1E1E;
+  --monaco-widget-border: #333333;
+}
+
+/* Override Monaco Editor styles for dark game theme */
+.monaco-editor {
+  background-color: var(--monaco-bg) !important;
+}
+
+.monaco-editor .margin {
+  background-color: var(--monaco-bg) !important;
+}
+
+.monaco-editor .line-numbers {
+  color: var(--monaco-line-number) !important;
+}
+
+.monaco-editor .current-line {
+  background-color: var(--monaco-line-highlight) !important;
+  border: none !important;
+}
+
+.monaco-editor .cursor {
+  background-color: var(--monaco-cursor) !important;
+  box-shadow: 0 0 5px var(--monaco-cursor) !important;
+}
+
+.monaco-editor .view-overlays .selected-text {
+  background-color: var(--monaco-selection-bg) !important;
+}
+
+/* Syntax highlighting for dark game theme */
+.monaco-editor .mtk1 { color: #FFFFFF; } /* Default text */
+.monaco-editor .mtk2 { color: #FF5722; } /* Keywords */
+.monaco-editor .mtk3 { color: #8A2BE2; } /* Types */
+.monaco-editor .mtk4 { color: #00E5FF; } /* Functions */
+.monaco-editor .mtk5 { color: #00FF9D; } /* Strings */
+.monaco-editor .mtk6 { color: #FFAA00; } /* Numbers */
+.monaco-editor .mtk7 { color: #FF3D71; } /* Constants */
+.monaco-editor .mtk8 { color: #BBBBBB; } /* Comments */
+.monaco-editor .mtk9 { color: #FFFFFF; } /* Variables */
+
+/* Widget styling */
+.monaco-editor .suggest-widget,
+.monaco-editor .parameter-hints-widget,
+.monaco-editor .monaco-hover,
+.monaco-editor .context-view {
+  background-color: var(--monaco-widget-bg) !important;
+  border: 1px solid var(--monaco-widget-border) !important;
+  box-shadow: 0 0 10px rgba(138, 43, 226, 0.5) !important;
+  border-radius: 4px !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused {
+  background-color: rgba(138, 43, 226, 0.3) !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row:hover {
+  background-color: rgba(138, 43, 226, 0.2) !important;
+}
+
+/* Scrollbar styling */
+.monaco-editor .monaco-scrollable-element .scrollbar {
+  background-color: #1E1E1E !important;
+}
+
+.monaco-editor .monaco-scrollable-element .slider {
+  background-color: #8A2BE2 !important;
+}
+
+.monaco-editor .monaco-scrollable-element .slider:hover {
+  background-color: #FF5722 !important;
+}
+
+/* Error and warning squiggles */
+.monaco-editor .squiggly-error {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 3' width='6' height='3'%3E%3Cpath fill='%23FF3D71' d='M 0,1 L 2,0 L 4,1 L 6,0 L 6,2 L 4,3 L 2,2 L 0,3 Z'/%3E%3C/svg%3E") repeat-x bottom left !important;
+}
+
+.monaco-editor .squiggly-warning {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 3' width='6' height='3'%3E%3Cpath fill='%23FFAA00' d='M 0,1 L 2,0 L 4,1 L 6,0 L 6,2 L 4,3 L 2,2 L 0,3 Z'/%3E%3C/svg%3E") repeat-x bottom left !important;
+}
+
+.monaco-editor .squiggly-info {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 3' width='6' height='3'%3E%3Cpath fill='%2300E5FF' d='M 0,1 L 2,0 L 4,1 L 6,0 L 6,2 L 4,3 L 2,2 L 0,3 Z'/%3E%3C/svg%3E") repeat-x bottom left !important;
+}
+
+/* Gutter indicators */
+.monaco-editor .glyph-margin .codicon-error {
+  color: #FF3D71 !important;
+}
+
+.monaco-editor .glyph-margin .codicon-warning {
+  color: #FFAA00 !important;
+}
+
+.monaco-editor .glyph-margin .codicon-info {
+  color: #00E5FF !important;
+}
+
+/* Diff editor styling */
+.monaco-diff-editor .diffOverview {
+  background-color: #1E1E1E !important;
+}
+
+.monaco-diff-editor .diffOverview .diffOverviewRuler.additions {
+  background-color: #00FF9D !important;
+}
+
+.monaco-diff-editor .diffOverview .diffOverviewRuler.deletions {
+  background-color: #FF3D71 !important;
+}
+
+/* Minimap styling */
+.monaco-editor .minimap {
+  opacity: 0.8;
+}
+
+.monaco-editor .minimap-slider {
+  background-color: rgba(138, 43, 226, 0.4) !important;
+}
+
+.monaco-editor .minimap-slider:hover {
+  background-color: rgba(138, 43, 226, 0.6) !important;
+}
+
+/* Line decorations */
+.monaco-editor .line-decoration.added-line {
+  background-color: rgba(0, 255, 157, 0.1) !important;
+}
+
+.monaco-editor .line-decoration.deleted-line {
+  background-color: rgba(255, 61, 113, 0.1) !important;
+}
+
+.monaco-editor .line-decoration.modified-line {
+  background-color: rgba(255, 170, 0, 0.1) !important;
+}
+
+/* Bracket matching */
+.monaco-editor .bracket-match {
+  background-color: rgba(138, 43, 226, 0.3) !important;
+  border: 1px solid #8A2BE2 !important;
+  box-shadow: 0 0 3px #8A2BE2 !important;
+}
+
+/* Find widget */
+.monaco-editor .find-widget {
+  background-color: #1E1E1E !important;
+  border: 1px solid #333333 !important;
+  box-shadow: 0 0 10px rgba(138, 43, 226, 0.5) !important;
+}
+
+.monaco-editor .find-widget .button {
+  background-color: transparent !important;
+  color: #FFFFFF !important;
+}
+
+.monaco-editor .find-widget .button:hover {
+  background-color: rgba(138, 43, 226, 0.3) !important;
+}
+
+.monaco-editor .find-widget .monaco-inputbox {
+  background-color: #252525 !important;
+  border: 1px solid #333333 !important;
+}
+
+.monaco-editor .find-widget .monaco-inputbox input {
+  color: #FFFFFF !important;
+}
+
+.monaco-editor .find-widget .matchesCount {
+  color: #00FF9D !important;
+}
+
+/* Status bar */
+.monaco-editor .editor-statusbar {
+  background-color: #1E1E1E !important;
+  color: #BBBBBB !important;
+  border-top: 1px solid #333333 !important;
+}
+
+/* Editor groups */
+.monaco-editor-group {
+  border: 1px solid #333333 !important;
+}
+
+.monaco-editor-group .title {
+  background-color: #1E1E1E !important;
+}
+
+.monaco-editor-group .title .label {
+  color: #FFFFFF !important;
+}
+
+/* Tabs */
+.monaco-editor .tabs-container {
+  background-color: #1E1E1E !important;
+}
+
+.monaco-editor .tabs-container .tab {
+  background-color: #252525 !important;
+  border: 1px solid #333333 !important;
+  color: #BBBBBB !important;
+}
+
+.monaco-editor .tabs-container .tab.active {
+  background-color: #121212 !important;
+  color: #FFFFFF !important;
+  border-top: 2px solid #8A2BE2 !important;
+  box-shadow: 0 0 5px rgba(138, 43, 226, 0.5) !important;
+}
+
+.monaco-editor .tabs-container .tab:hover {
+  background-color: #333333 !important;
+}
+
+/* Animations */
+@keyframes cursor-blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.monaco-editor .cursor {
+  animation: cursor-blink 1s infinite;
+}
+
+/* Code lens */
+.monaco-editor .codelens-decoration {
+  color: #8A2BE2 !important;
+}
+
+.monaco-editor .codelens-decoration:hover {
+  color: #FF5722 !important;
+  text-decoration: underline;
+}
+
+/* Inline completions */
+.monaco-editor .inline-completion-widget {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Peek view */
+.monaco-editor .peek-view-widget {
+  background-color: #1E1E1E !important;
+  border: 1px solid #333333 !important;
+  box-shadow: 0 0 10px rgba(138, 43, 226, 0.5) !important;
+}
+
+.monaco-editor .peek-view-widget .head {
+  background-color: #252525 !important;
+}
+
+.monaco-editor .peek-view-widget .head .title {
+  color: #FFFFFF !important;
+}
+
+.monaco-editor .peek-view-widget .body {
+  border-top: 1px solid #333333 !important;
+}
+
+/* Hover widget */
+.monaco-editor-hover {
+  background-color: #1E1E1E !important;
+  border: 1px solid #333333 !important;
+  box-shadow: 0 0 10px rgba(138, 43, 226, 0.5) !important;
+}
+
+.monaco-editor-hover .contents {
+  color: #FFFFFF !important;
+}
+
+/* Marker navigation */
+.monaco-editor .marker-navigation {
+  background-color: #1E1E1E !important;
+  border: 1px solid #333333 !important;
+}
+
+.monaco-editor .marker-navigation .title {
+  color: #FFFFFF !important;
+}
+
+/* Reference search */
+.monaco-editor .reference-zone-widget {
+  background-color: #1E1E1E !important;
+  border: 1px solid #333333 !important;
+  box-shadow: 0 0 10px rgba(138, 43, 226, 0.5) !important;
+}
+
+.monaco-editor .reference-zone-widget .ref-tree {
+  background-color: #252525 !important;
+}
+
+/* Rename input */
+.monaco-editor .rename-box {
+  background-color: #1E1E1E !important;
+  border: 1px solid #333333 !important;
+  box-shadow: 0 0 10px rgba(138, 43, 226, 0.5) !important;
+}
+
+.monaco-editor .rename-box input {
+  color: #FFFFFF !important;
+}
+
+/* Completion item */
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row .suggest-icon {
+  color: #8A2BE2 !important;
+}
+
+/* Folding */
+.monaco-editor .folded-background {
+  background-color: rgba(138, 43, 226, 0.1) !important;
+}
+
+.monaco-editor .folding-decoration {
+  color: #8A2BE2 !important;
+}
+
+/* Indent guides */
+.monaco-editor .indent-guide {
+  border-left: 1px solid rgba(138, 43, 226, 0.1) !important;
+}
+
+/* Active indent guide */
+.monaco-editor .indent-guide.active {
+  border-left: 1px solid rgba(138, 43, 226, 0.5) !important;
+}
+
+/* Whitespace */
+.monaco-editor .whitespace {
+  color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Rulers */
+.monaco-editor .vertical-ruler {
+  background-color: rgba(138, 43, 226, 0.1) !important;
+}
+
+/* Overlays */
+.monaco-editor .overlayWidgets {
+  z-index: 100;
+}
+
+/* Glow effect for active line */
+.monaco-editor .current-line::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 100%;
+  pointer-events: none;
+  box-shadow: 0 0 8px rgba(138, 43, 226, 0.3);
+  z-index: -1;
+}
+
+/* Glow effect for cursor */
+.monaco-editor .cursor::after {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 2px;
+  box-shadow: 0 0 8px #00E5FF;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Animated background for editor */
+.monaco-editor::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(rgba(138, 43, 226, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(138, 43, 226, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  z-index: -1;
+  animation: grid-shift 120s linear infinite;
+}
+
+@keyframes grid-shift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 50px 50px;
+  }
+}
+
+/* AI suggestion highlight */
+.monaco-editor .ai-suggestion-highlight {
+  background-color: rgba(0, 229, 255, 0.1) !important;
+  border-bottom: 1px dashed #00E5FF !important;
+}
+
+/* AI inline suggestion */
+.monaco-editor .ai-inline-suggestion {
+  color: rgba(0, 229, 255, 0.7) !important;
+  font-style: italic;
+}
+
+/* Game-like achievement notification */
+.monaco-editor .achievement-notification {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(45deg, #121212, #252525);
+  border: 1px solid #8A2BE2;
+  border-radius: 4px;
+  padding: 10px 15px;
+  color: #FFFFFF;
+  box-shadow: 0 0 10px rgba(138, 43, 226, 0.7);
+  z-index: 1000;
+  animation: achievement-appear 0.3s ease-out, achievement-glow 2s infinite alternate;
+}
+
+.monaco-editor .achievement-notification .title {
+  font-weight: bold;
+  color: #00E5FF;
+  margin-bottom: 5px;
+}
+
+.monaco-editor .achievement-notification .description {
+  font-size: 0.9em;
+  color: #BBBBBB;
+}
+
+@keyframes achievement-appear {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes achievement-glow {
+  0% {
+    box-shadow: 0 0 10px rgba(138, 43, 226, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(138, 43, 226, 0.9);
+  }
+}
