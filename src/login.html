@@ -118,11 +118,33 @@
             margin-bottom: 1.5rem;
             text-transform: uppercase;
             letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
         }
 
         .login-button:hover {
             box-shadow: var(--glow-medium);
             transform: translateY(-2px);
+        }
+
+        .login-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: left 0.7s ease;
+        }
+
+        .login-button:hover::before {
+            left: 100%;
         }
 
         .login-divider {
@@ -191,6 +213,14 @@
             color: #A2AAAD;
         }
 
+        .oauth-button.twitter i {
+            color: #1DA1F2;
+        }
+
+        .oauth-button.discord i {
+            color: #7289DA;
+        }
+
         .login-footer {
             text-align: center;
             color: var(--text-secondary);
@@ -200,10 +230,12 @@
         .signup-link {
             color: var(--highlight);
             text-decoration: none;
+            transition: all 0.3s ease;
         }
 
         .signup-link:hover {
             text-decoration: underline;
+            text-shadow: var(--glow-small);
         }
 
         .particles-container {
@@ -237,6 +269,28 @@
             100% {
                 opacity: 0;
                 transform: translateY(var(--end-y)) translateX(var(--end-x));
+            }
+        }
+
+        /* Loading animation */
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-right: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
             }
         }
 
@@ -277,7 +331,7 @@
                 <p class="login-subtitle">Sign in to continue to your workspace</p>
             </div>
             
-            <form class="login-form">
+            <form class="login-form" id="login-form">
                 <div class="form-group">
                     <label for="email" class="form-label">Email</label>
                     <input type="email" id="email" class="form-input" placeholder="Enter your email" required>
@@ -297,7 +351,10 @@
                     <a href="#" class="forgot-password">Forgot password?</a>
                 </div>
                 
-                <button type="submit" class="login-button">Sign In</button>
+                <button type="submit" class="login-button" id="login-button">
+                    <span class="loading-spinner" id="login-spinner"></span>
+                    <span id="login-text">Sign In</span>
+                </button>
             </form>
             
             <div class="login-divider">
@@ -305,24 +362,34 @@
             </div>
             
             <div class="oauth-buttons">
-                <button class="oauth-button google">
+                <button class="oauth-button google" data-provider="google">
                     <i class="fab fa-google"></i>
                     <span>Google</span>
                 </button>
                 
-                <button class="oauth-button github">
+                <button class="oauth-button github" data-provider="github">
                     <i class="fab fa-github"></i>
                     <span>GitHub</span>
                 </button>
                 
-                <button class="oauth-button microsoft">
+                <button class="oauth-button microsoft" data-provider="microsoft">
                     <i class="fab fa-microsoft"></i>
                     <span>Microsoft</span>
                 </button>
                 
-                <button class="oauth-button apple">
+                <button class="oauth-button apple" data-provider="apple">
                     <i class="fab fa-apple"></i>
                     <span>Apple</span>
+                </button>
+                
+                <button class="oauth-button twitter" data-provider="twitter">
+                    <i class="fab fa-twitter"></i>
+                    <span>Twitter</span>
+                </button>
+                
+                <button class="oauth-button discord" data-provider="discord">
+                    <i class="fab fa-discord"></i>
+                    <span>Discord</span>
                 </button>
             </div>
             
@@ -332,10 +399,19 @@
         </div>
     </div>
 
-    <script>
-        // Create particle background
+    <script type="module">
+        import oauthService from './services/oauth-service.js';
+
+        // Initialize OAuth service
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
+            setupFormHandlers();
+            setupOAuthHandlers();
+            
+            // Initialize OAuth service with environment-specific configuration
+            oauthService.init({
+                // Configuration would be loaded from environment variables in production
+            });
         });
 
         function createParticles() {
@@ -383,49 +459,122 @@
             }
         }
 
-        // Form submission handling
-        document.querySelector('.login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
+        function setupFormHandlers() {
+            const loginForm = document.getElementById('login-form');
+            if (!loginForm) return;
             
-            // In a real application, this would send the credentials to the server
-            // For now, we'll just simulate a successful login
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            if (email && password) {
-                // Show loading state
-                const loginButton = document.querySelector('.login-button');
-                loginButton.textContent = 'Signing in...';
-                loginButton.disabled = true;
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
                 
-                // Simulate API call
-                setTimeout(() => {
-                    // Redirect to main IDE page
-                    window.location.href = 'index.html';
-                }, 1500);
-            }
-        });
-
-        // OAuth button handlers
-        document.querySelectorAll('.oauth-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const provider = this.classList[1]; // google, github, microsoft, or apple
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
                 
-                // In a real application, this would redirect to the OAuth provider
-                // For now, we'll just simulate the OAuth flow
-                
-                // Show loading state
-                this.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Connecting...</span>`;
-                this.disabled = true;
-                
-                // Simulate OAuth redirect and callback
-                setTimeout(() => {
-                    // Redirect to main IDE page
-                    window.location.href = 'index.html';
-                }, 1500);
+                if (email && password) {
+                    // Show loading state
+                    const loginButton = document.getElementById('login-button');
+                    const loginSpinner = document.getElementById('login-spinner');
+                    const loginText = document.getElementById('login-text');
+                    
+                    loginSpinner.style.display = 'inline-block';
+                    loginText.textContent = 'Signing in...';
+                    loginButton.disabled = true;
+                    
+                    try {
+                        // In a real application, this would call the backend API
+                        // For now, we'll simulate a successful login
+                        await new Promise(resolve => setTimeout(resolve, 1500));
+                        
+                        // Store authentication token in localStorage
+                        localStorage.setItem('auth_token', 'simulated_token');
+                        localStorage.setItem('user', JSON.stringify({
+                            email: email,
+                            name: email.split('@')[0]
+                        }));
+                        
+                        // Redirect to main IDE page
+                        window.location.href = 'index.html';
+                    } catch (error) {
+                        console.error('Login error:', error);
+                        
+                        // Reset button state
+                        loginSpinner.style.display = 'none';
+                        loginText.textContent = 'Sign In';
+                        loginButton.disabled = false;
+                        
+                        // Show error message
+                        alert('Login failed: ' + error.message);
+                    }
+                }
             });
-        });
+        }
+
+        function setupOAuthHandlers() {
+            const oauthButtons = document.querySelectorAll('.oauth-button');
+            
+            oauthButtons.forEach(button => {
+                button.addEventListener('click', async function() {
+                    const provider = this.getAttribute('data-provider');
+                    if (!provider) return;
+                    
+                    // Show loading state
+                    const originalContent = this.innerHTML;
+                    this.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Connecting...</span>`;
+                    this.disabled = true;
+                    
+                    try {
+                        // Initiate OAuth flow
+                        oauthService.initiateOAuth(provider);
+                        
+                        // Note: The page will be redirected to the OAuth provider
+                        // The rest of the flow will be handled by the callback
+                    } catch (error) {
+                        console.error(`OAuth error (${provider}):`, error);
+                        
+                        // Reset button state
+                        this.innerHTML = originalContent;
+                        this.disabled = false;
+                        
+                        // Show error message
+                        alert(`Authentication with ${provider} failed: ${error.message}`);
+                    }
+                });
+            });
+        }
+
+        // Handle OAuth callback
+        // This would be called when the user is redirected back from the OAuth provider
+        async function handleOAuthCallback() {
+            // Check if this is a callback URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const provider = urlParams.get('provider');
+            
+            if (code && provider) {
+                try {
+                    // Exchange code for token
+                    const authResult = await oauthService.handleCallback(provider, window.location.href);
+                    
+                    // Store authentication data
+                    localStorage.setItem('auth_token', authResult.accessToken);
+                    localStorage.setItem('user', JSON.stringify(authResult.userProfile));
+                    
+                    // Redirect to main IDE page
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('OAuth callback error:', error);
+                    alert('Authentication failed: ' + error.message);
+                    
+                    // Redirect back to login page
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+
+        // Check if this is a callback URL
+        if (window.location.search.includes('code=')) {
+            handleOAuthCallback();
+        }
     </script>
 </body>
 </html>

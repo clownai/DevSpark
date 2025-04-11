@@ -1,191 +1,173 @@
-// Authentication System Test Script for DevSpark IDE
-// This script tests the OAuth service and login functionality
+// OAuth service test file for DevSpark IDE
+// This file contains tests for the OAuth service implementation
 
-// Import the OAuth service
 import oauthService from '../services/oauth-service.js';
 
-// Test configuration
-const testConfig = {
-    google: {
-        clientId: 'test-google-client-id',
-        redirectUri: 'http://localhost:3000/auth/google/callback'
-    },
-    github: {
-        clientId: 'test-github-client-id',
-        redirectUri: 'http://localhost:3000/auth/github/callback'
-    },
-    microsoft: {
-        clientId: 'test-microsoft-client-id',
-        redirectUri: 'http://localhost:3000/auth/microsoft/callback'
-    },
-    apple: {
-        clientId: 'test-apple-client-id',
-        redirectUri: 'http://localhost:3000/auth/apple/callback'
-    }
-};
-
 // Mock fetch for testing
-window.fetch = async (url, options) => {
-    console.log(`Mock fetch called with URL: ${url}`);
-    console.log('Options:', options);
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({
+      access_token: 'mock_access_token',
+      refresh_token: 'mock_refresh_token',
+      expires_in: 3600,
+      id_token: 'mock_id_token'
+    })
+  })
+);
+
+describe('OAuth Service Tests', () => {
+  beforeEach(() => {
+    // Reset mocks before each test
+    fetch.mockClear();
     
-    // Simulate successful token response
-    if (url.includes('token')) {
-        return {
-            ok: true,
-            json: async () => ({
-                access_token: 'mock-access-token',
-                refresh_token: 'mock-refresh-token',
-                expires_in: 3600,
-                token_type: 'Bearer'
-            })
-        };
-    }
-    
-    // Simulate successful user profile response
-    if (url.includes('userinfo') || url.includes('user') || url.includes('me')) {
-        return {
-            ok: true,
-            json: async () => ({
-                id: 'user123',
-                sub: 'user123',
-                name: 'Test User',
-                email: 'test@example.com',
-                picture: 'https://example.com/avatar.jpg'
-            })
-        };
-    }
-    
-    // Simulate successful login response
-    if (url.includes('login')) {
-        return {
-            ok: true,
-            json: async () => ({
-                token: 'mock-jwt-token',
-                user: {
-                    id: 'user123',
-                    name: 'Test User',
-                    email: 'test@example.com'
-                }
-            })
-        };
-    }
-    
-    return {
-        ok: false,
-        json: async () => ({ message: 'Not found' })
+    // Mock window.location
+    delete window.location;
+    window.location = { 
+      href: '',
+      origin: 'https://devspark.app'
     };
-};
+  });
 
-// Test initialization
-function testInit() {
-    console.log('Testing OAuth service initialization...');
-    oauthService.init(testConfig);
-    console.log('OAuth service initialized with test configuration');
-}
-
-// Test authorization URL generation
-function testAuthorizationUrl() {
-    console.log('Testing authorization URL generation...');
-    
-    const providers = ['google', 'github', 'microsoft', 'apple'];
-    
-    providers.forEach(provider => {
-        try {
-            const authUrl = oauthService.getAuthorizationUrl(provider);
-            console.log(`${provider} authorization URL: ${authUrl}`);
-            
-            // Verify URL contains required parameters
-            const urlParams = new URL(authUrl).searchParams;
-            console.assert(urlParams.has('client_id'), `${provider} URL missing client_id`);
-            console.assert(urlParams.has('redirect_uri'), `${provider} URL missing redirect_uri`);
-            console.assert(urlParams.has('scope'), `${provider} URL missing scope`);
-            console.assert(urlParams.has('response_type'), `${provider} URL missing response_type`);
-            console.assert(urlParams.has('state'), `${provider} URL missing state`);
-            
-            console.log(`${provider} authorization URL generation: SUCCESS`);
-        } catch (error) {
-            console.error(`${provider} authorization URL generation: FAILED`, error);
-        }
+  test('should initialize OAuth providers', () => {
+    oauthService.init({
+      google: {
+        clientId: 'test_google_client_id'
+      }
     });
-}
+    
+    expect(oauthService.providers.google.clientId).toBe('test_google_client_id');
+  });
 
-// Test OAuth callback handling
-async function testOAuthCallback() {
-    console.log('Testing OAuth callback handling...');
+  test('should generate authorization URL for Google', () => {
+    const authUrl = oauthService.getAuthorizationUrl('google');
     
-    const testProvider = 'google';
-    const testCode = 'test-auth-code';
-    const testCallbackUrl = `http://localhost:3000/auth/google/callback?code=${testCode}&state=test-state`;
-    
-    try {
-        const result = await oauthService.handleCallback(testProvider, testCallbackUrl);
-        
-        console.log('OAuth callback result:', result);
-        
-        // Verify result contains expected properties
-        console.assert(result.provider === testProvider, 'Result has incorrect provider');
-        console.assert(result.accessToken === 'mock-access-token', 'Result missing access token');
-        console.assert(result.refreshToken === 'mock-refresh-token', 'Result missing refresh token');
-        console.assert(result.expiresIn === 3600, 'Result has incorrect expires_in');
-        console.assert(result.userProfile, 'Result missing user profile');
-        
-        console.log('OAuth callback handling: SUCCESS');
-    } catch (error) {
-        console.error('OAuth callback handling: FAILED', error);
-    }
-}
+    expect(authUrl).toContain('https://accounts.google.com/o/oauth2/v2/auth');
+    expect(authUrl).toContain('client_id=');
+    expect(authUrl).toContain('redirect_uri=');
+    expect(authUrl).toContain('scope=email+profile');
+    expect(authUrl).toContain('response_type=code');
+    expect(authUrl).toContain('state=');
+  });
 
-// Test email/password login
-async function testEmailPasswordLogin() {
-    console.log('Testing email/password login...');
+  test('should generate authorization URL for GitHub', () => {
+    const authUrl = oauthService.getAuthorizationUrl('github');
     
-    const testEmail = 'test@example.com';
-    const testPassword = 'password123';
-    
-    try {
-        // Mock the loginWithEmailPassword method if it exists
-        if (oauthService.loginWithEmailPassword) {
-            const result = await oauthService.loginWithEmailPassword(testEmail, testPassword);
-            
-            console.log('Email/password login result:', result);
-            
-            // Verify result contains expected properties
-            console.assert(result.token === 'mock-jwt-token', 'Result missing JWT token');
-            console.assert(result.user, 'Result missing user data');
-            console.assert(result.user.email === testEmail, 'Result has incorrect user email');
-            
-            console.log('Email/password login: SUCCESS');
-        } else {
-            console.log('Email/password login method not implemented, skipping test');
-        }
-    } catch (error) {
-        console.error('Email/password login: FAILED', error);
-    }
-}
+    expect(authUrl).toContain('https://github.com/login/oauth/authorize');
+    expect(authUrl).toContain('client_id=');
+    expect(authUrl).toContain('redirect_uri=');
+    expect(authUrl).toContain('scope=user%3Aemail');
+    expect(authUrl).toContain('response_type=code');
+    expect(authUrl).toContain('state=');
+  });
 
-// Run all tests
-async function runTests() {
-    console.log('Starting OAuth service tests...');
+  test('should generate authorization URL for Microsoft', () => {
+    const authUrl = oauthService.getAuthorizationUrl('microsoft');
     
-    testInit();
-    testAuthorizationUrl();
-    await testOAuthCallback();
-    await testEmailPasswordLogin();
-    
-    console.log('All tests completed');
-}
+    expect(authUrl).toContain('https://login.microsoftonline.com/common/oauth2/v2.0/authorize');
+    expect(authUrl).toContain('client_id=');
+    expect(authUrl).toContain('redirect_uri=');
+    expect(authUrl).toContain('scope=openid+profile+email');
+    expect(authUrl).toContain('response_type=code');
+    expect(authUrl).toContain('state=');
+  });
 
-// Execute tests when script is loaded
-runTests().catch(error => {
-    console.error('Test execution failed:', error);
+  test('should generate authorization URL for Twitter', () => {
+    const authUrl = oauthService.getAuthorizationUrl('twitter');
+    
+    expect(authUrl).toContain('https://twitter.com/i/oauth2/authorize');
+    expect(authUrl).toContain('client_id=');
+    expect(authUrl).toContain('redirect_uri=');
+    expect(authUrl).toContain('scope=tweet.read+users.read');
+    expect(authUrl).toContain('response_type=code');
+    expect(authUrl).toContain('state=');
+  });
+
+  test('should generate authorization URL for Discord', () => {
+    const authUrl = oauthService.getAuthorizationUrl('discord');
+    
+    expect(authUrl).toContain('https://discord.com/api/oauth2/authorize');
+    expect(authUrl).toContain('client_id=');
+    expect(authUrl).toContain('redirect_uri=');
+    expect(authUrl).toContain('scope=identify+email');
+    expect(authUrl).toContain('response_type=code');
+    expect(authUrl).toContain('state=');
+  });
+
+  test('should throw error for unsupported provider', () => {
+    expect(() => {
+      oauthService.getAuthorizationUrl('unsupported');
+    }).toThrow('Provider unsupported not supported');
+  });
+
+  test('should exchange code for token', async () => {
+    await oauthService.exchangeCodeForToken('google', 'test_code');
+    
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls[0][0]).toBe('https://oauth2.googleapis.com/token');
+    expect(fetch.mock.calls[0][1].method).toBe('POST');
+    expect(fetch.mock.calls[0][1].body.toString()).toContain('code=test_code');
+    expect(fetch.mock.calls[0][1].body.toString()).toContain('grant_type=authorization_code');
+  });
+
+  test('should get user profile from Google', async () => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          sub: '12345',
+          name: 'Test User',
+          email: 'test@example.com',
+          picture: 'https://example.com/profile.jpg'
+        })
+      })
+    );
+    
+    const profile = await oauthService.getUserProfile('google', 'test_token');
+    
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls[0][0]).toBe('https://www.googleapis.com/oauth2/v3/userinfo');
+    expect(fetch.mock.calls[0][1].headers.Authorization).toBe('Bearer test_token');
+    
+    expect(profile.provider).toBe('google');
+    expect(profile.id).toBe('12345');
+    expect(profile.name).toBe('Test User');
+    expect(profile.email).toBe('test@example.com');
+    expect(profile.avatar).toBe('https://example.com/profile.jpg');
+  });
+
+  test('should handle OAuth callback', async () => {
+    const callbackUrl = 'https://devspark.app/auth/google/callback?code=test_callback_code&state=test_state';
+    
+    global.fetch = jest.fn()
+      .mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            access_token: 'test_access_token',
+            refresh_token: 'test_refresh_token',
+            expires_in: 3600
+          })
+        })
+      )
+      .mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            sub: '12345',
+            name: 'Test User',
+            email: 'test@example.com',
+            picture: 'https://example.com/profile.jpg'
+          })
+        })
+      );
+    
+    const result = await oauthService.handleCallback('google', callbackUrl);
+    
+    expect(result.provider).toBe('google');
+    expect(result.accessToken).toBe('test_access_token');
+    expect(result.refreshToken).toBe('test_refresh_token');
+    expect(result.expiresIn).toBe(3600);
+    expect(result.userProfile.name).toBe('Test User');
+  });
 });
-
-// Export test functions for external use
-export default {
-    runTests,
-    testInit,
-    testAuthorizationUrl,
-    testOAuthCallback,
-    testEmailPasswordLogin
-};
