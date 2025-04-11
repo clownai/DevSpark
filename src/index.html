@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevSpark IDE</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <!-- Monaco Editor CDN -->
+    <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/editor/editor.main.min.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="ide-container">
+        <!-- Sidebar for file explorer and other tools -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-bolt"></i> DevSpark
+                </div>
+                <div class="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+            
+            <!-- File Explorer -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <i class="fas fa-folder"></i> Explorer
+                </div>
+                <div class="file-explorer" id="file-explorer">
+                    <!-- File tree will be populated here -->
+                    <div class="folder">
+                        <div class="folder-name"><i class="fas fa-folder-open"></i> project</div>
+                        <div class="folder-contents">
+                            <div class="folder">
+                                <div class="folder-name"><i class="fas fa-folder"></i> src</div>
+                                <div class="folder-contents">
+                                    <div class="file"><i class="fas fa-file-code"></i> index.js</div>
+                                    <div class="file"><i class="fas fa-file-code"></i> app.js</div>
+                                    <div class="file"><i class="fas fa-file-alt"></i> styles.css</div>
+                                </div>
+                            </div>
+                            <div class="file"><i class="fas fa-file-alt"></i> README.md</div>
+                            <div class="file"><i class="fas fa-file-code"></i> package.json</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Source Control -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <i class="fas fa-code-branch"></i> Source Control
+                </div>
+                <div class="source-control" id="source-control">
+                    <!-- Git status will be shown here -->
+                    <div class="git-status">
+                        <div class="git-branch"><i class="fas fa-code-branch"></i> main</div>
+                        <div class="git-changes">
+                            <div class="git-change modified"><i class="fas fa-pencil-alt"></i> index.js</div>
+                            <div class="git-change added"><i class="fas fa-plus"></i> app.js</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Assistant -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <i class="fas fa-robot"></i> AI Assistant
+                </div>
+                <div class="ai-assistant" id="ai-assistant">
+                    <!-- AI chat interface will be here -->
+                    <div class="ai-chat-button">
+                        <i class="fas fa-comment-dots"></i> Ask AI Assistant
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main editor area -->
+        <div class="main-area">
+            <!-- Tab bar for open files -->
+            <div class="tab-bar">
+                <div class="tab active">
+                    <span>index.js</span>
+                    <i class="fas fa-times"></i>
+                </div>
+                <div class="tab">
+                    <span>app.js</span>
+                    <i class="fas fa-times"></i>
+                </div>
+                <div class="tab">
+                    <span>README.md</span>
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            
+            <!-- Monaco Editor container -->
+            <div id="monaco-editor-container"></div>
+            
+            <!-- Status bar -->
+            <div class="status-bar">
+                <div class="status-item">
+                    <i class="fas fa-code-branch"></i> main
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-check-circle"></i> Ready
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-code"></i> JavaScript
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-clock"></i> Last saved: 2 minutes ago
+                </div>
+            </div>
+        </div>
+        
+        <!-- Terminal panel -->
+        <div class="panel terminal-panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fas fa-terminal"></i> Terminal
+                </div>
+                <div class="panel-actions">
+                    <i class="fas fa-plus"></i>
+                    <i class="fas fa-minus"></i>
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="terminal" id="terminal">
+                <div class="terminal-line">$ npm start</div>
+                <div class="terminal-line">Starting development server...</div>
+                <div class="terminal-line">Server running at http://localhost:3000</div>
+                <div class="terminal-line">$ _</div>
+            </div>
+        </div>
+        
+        <!-- AI Chat panel (hidden by default) -->
+        <div class="panel ai-chat-panel hidden">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fas fa-robot"></i> AI Assistant
+                </div>
+                <div class="panel-actions">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="ai-chat" id="ai-chat">
+                <div class="chat-messages">
+                    <div class="message ai">
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-text">Hello! I'm your AI coding assistant. How can I help you today?</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" placeholder="Ask a question or request code help...">
+                    <button><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monaco Editor loader -->
+    <script>
+        var require = { paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' } };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/editor/editor.main.nls.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/editor/editor.main.min.js"></script>
+    
+    <!-- Application scripts -->
+    <script src="scripts/main.js"></script>
+</body>
+</html>
