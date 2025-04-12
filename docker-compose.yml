@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # DevSpark IDE application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: devspark-app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./dist:/app/dist
+      - node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    command: npm run dev
+    restart: unless-stopped
+    networks:
+      - devspark-network
+
+  # Database service (using Supabase local development)
+  # This is a placeholder - in production, you would use Supabase cloud
+  database:
+    image: supabase/postgres:14.1.0
+    container_name: devspark-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - devspark-network
+
+networks:
+  devspark-network:
+    driver: bridge
+
+volumes:
+  node_modules:
+  db-data:

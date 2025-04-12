@@ -1,0 +1,14 @@
+# Security Scanning Configuration for npm packages
+# This file configures npm audit to enforce security policies
+
+# Audit level configuration
+audit-level=moderate
+
+# Ignore specific vulnerabilities (example format)
+# ignore-vulnerabilities=CVE-2023-12345,CVE-2023-67890
+
+# Production only flag - only check production dependencies
+# production=true
+
+# Audit signatures to verify package integrity
+audit-signatures=true

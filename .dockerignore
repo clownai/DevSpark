@@ -1,0 +1,38 @@
+# .dockerignore file for DevSpark IDE
+
+# Version control
+.git
+.gitignore
+.github
+
+# Node.js
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Build artifacts
+dist
+build
+coverage
+
+# Development files
+.vscode
+.idea
+*.md
+*.log
+.env.local
+.env.development
+.env.test
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Temporary files
+.DS_Store
+*.swp
+*.swo
+tmp
+temp
