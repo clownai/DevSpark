@@ -11,6 +11,7 @@ import { Extensions as ConfigurationExtensions } from '../../../../platform/conf
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { DropIntoEditorController, changeDropTypeCommandId, defaultProviderConfig, dropWidgetVisibleCtx } from './dropIntoEditorController.js';
 registerEditorContribution(DropIntoEditorController.ID, DropIntoEditorController, 2 /* EditorContributionInstantiation.BeforeFirstInteraction */);
+registerEditorFeature(DefaultDropProvidersFeature);
 registerEditorCommand(new class extends EditorCommand {
     constructor() {
         super({
@@ -23,12 +24,27 @@ registerEditorCommand(new class extends EditorCommand {
         });
     }
     runEditorCommand(_accessor, editor, _args) {
-        var _a;
-        (_a = DropIntoEditorController.get(editor)) === null || _a === void 0 ? void 0 : _a.changeDropType();
+        DropIntoEditorController.get(editor)?.changeDropType();
     }
 });
-registerEditorFeature(DefaultDropProvidersFeature);
-Registry.as(ConfigurationExtensions.Configuration).registerConfiguration(Object.assign(Object.assign({}, editorConfigurationBaseNode), { properties: {
+registerEditorCommand(new class extends EditorCommand {
+    constructor() {
+        super({
+            id: 'editor.hideDropWidget',
+            precondition: dropWidgetVisibleCtx,
+            kbOpts: {
+                weight: 100 /* KeybindingWeight.EditorContrib */,
+                primary: 9 /* KeyCode.Escape */,
+            }
+        });
+    }
+    runEditorCommand(_accessor, editor, _args) {
+        DropIntoEditorController.get(editor)?.clearWidgets();
+    }
+});
+Registry.as(ConfigurationExtensions.Configuration).registerConfiguration({
+    ...editorConfigurationBaseNode,
+    properties: {
         [defaultProviderConfig]: {
             type: 'object',
             scope: 5 /* ConfigurationScope.LANGUAGE_OVERRIDABLE */,
@@ -38,4 +54,5 @@ Registry.as(ConfigurationExtensions.Configuration).registerConfiguration(Object.
                 type: 'string',
             },
         },
-    } }));
+    }
+});

@@ -1,156 +1,144 @@
-// src/components/layout/Sidebar.tsx
 import React from 'react';
 import styled from 'styled-components';
-import { useAppSelector, useAppDispatch } from '../../store';
-import { fetchFiles, setCurrentDirectory, selectFile } from '../../store/slices/fileSystemSlice';
-import { openFile } from '../../store/slices/editorSlice';
-import Button from '../ui/Button';
 
-const SidebarContainer = styled.div`
-  width: 250px;
+export interface SidebarItemProps {
+  id: string;
+  label: string;
+  icon: string;
+  onClick?: () => void;
+  active?: boolean;
+}
+
+export interface SidebarProps {
+  items: SidebarItemProps[];
+  className?: string;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+}
+
+const SidebarContainer = styled.aside<{ collapsed?: boolean }>`
+  width: ${props => props.collapsed ? '48px' : '220px'};
   height: 100%;
-  background-color: #1e1e1e;
-  color: #e0e0e0;
+  background-color: var(--sidebar-bg, #1e1e1e);
+  color: var(--sidebar-text, #fff);
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 0.3s ease;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #333;
 `;
 
-const SidebarHeader = styled.div`
-  padding: 16px;
-  border-bottom: 1px solid #333;
+const SidebarHeader = styled.div<{ collapsed?: boolean }>`
+  height: 48px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: ${props => props.collapsed ? 'center' : 'space-between'};
+  padding: ${props => props.collapsed ? '0' : '0 16px'};
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
 `;
 
-const SidebarTitle = styled.h2`
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 500;
+const CollapseButton = styled.button`
+  background: none;
+  border: none;
+  color: var(--sidebar-text-secondary, rgba(255, 255, 255, 0.6));
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  
+  &:hover {
+    background-color: var(--sidebar-button-hover, rgba(255, 255, 255, 0.1));
+    color: var(--sidebar-text, #fff);
+  }
 `;
 
-const FileExplorer = styled.div`
+const SidebarContent = styled.div`
   flex: 1;
-  overflow-y: auto;
   padding: 8px 0;
 `;
 
-const DirectoryItem = styled.div<{ isSelected: boolean }>`
-  padding: 8px 16px;
-  cursor: pointer;
+const SidebarItemContainer = styled.div<{ active?: boolean; collapsed?: boolean }>`
   display: flex;
   align-items: center;
-  gap: 8px;
-  background-color: ${({ isSelected }) => (isSelected ? '#2a2d2e' : 'transparent')};
+  padding: ${props => props.collapsed ? '12px 0' : '12px 16px'};
+  cursor: pointer;
+  background-color: ${props => props.active ? 'var(--sidebar-item-active-bg, rgba(255, 255, 255, 0.1))' : 'transparent'};
+  color: ${props => props.active ? 'var(--sidebar-text, #fff)' : 'var(--sidebar-text-secondary, rgba(255, 255, 255, 0.6))'};
+  border-left: ${props => props.active ? '3px solid var(--primary-color, #4a6cf7)' : '3px solid transparent'};
+  transition: all 0.2s ease;
+  justify-content: ${props => props.collapsed ? 'center' : 'flex-start'};
   
   &:hover {
-    background-color: #2a2d2e;
+    background-color: var(--sidebar-item-hover-bg, rgba(255, 255, 255, 0.05));
+    color: var(--sidebar-text, #fff);
+  }
+  
+  .item-icon {
+    font-size: 16px;
+    min-width: 20px;
+    text-align: center;
+    margin-right: ${props => props.collapsed ? '0' : '12px'};
+  }
+  
+  .item-label {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: ${props => props.collapsed ? 'none' : 'block'};
   }
 `;
 
-const FileItem = styled.div<{ isSelected: boolean }>`
-  padding: 8px 16px 8px 32px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: ${({ isSelected }) => (isSelected ? '#2a2d2e' : 'transparent')};
-  
-  &:hover {
-    background-color: #2a2d2e;
-  }
-`;
-
-const FolderIcon = styled.span`
-  color: #e9b44c;
-`;
-
-const FileIcon = styled.span`
-  color: #9cdcfe;
-`;
-
-const SidebarFooter = styled.div`
-  padding: 16px;
-  border-top: 1px solid #333;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-interface SidebarProps {
-  onCreateFile: () => void;
-  onCreateFolder: () => void;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ onCreateFile, onCreateFolder }) => {
-  const dispatch = useAppDispatch();
-  const { currentDirectory, files, selectedFile } = useAppSelector(state => state.fileSystem);
-  const { currentFile } = useAppSelector(state => state.editor);
-  
-  React.useEffect(() => {
-    dispatch(fetchFiles(currentDirectory));
-  }, [dispatch, currentDirectory]);
-  
-  const handleDirectoryClick = (directory: string) => {
-    dispatch(setCurrentDirectory(directory));
-  };
-  
-  const handleFileClick = (file: string) => {
-    dispatch(selectFile(file));
-    dispatch(openFile(file));
-  };
-  
+const SidebarItem: React.FC<SidebarItemProps & { collapsed?: boolean }> = ({
+  id,
+  label,
+  icon,
+  onClick,
+  active = false,
+  collapsed = false,
+}) => {
   return (
-    <SidebarContainer>
-      <SidebarHeader>
-        <SidebarTitle>Explorer</SidebarTitle>
+    <SidebarItemContainer 
+      active={active} 
+      onClick={onClick}
+      collapsed={collapsed}
+    >
+      <i className={`${icon} item-icon`}></i>
+      <span className="item-label">{label}</span>
+    </SidebarItemContainer>
+  );
+};
+
+const Sidebar: React.FC<SidebarProps> = ({
+  items,
+  className,
+  collapsed = false,
+  onToggleCollapse,
+}) => {
+  return (
+    <SidebarContainer className={className} collapsed={collapsed}>
+      <SidebarHeader collapsed={collapsed}>
+        {!collapsed && <span>Navigation</span>}
+        <CollapseButton onClick={onToggleCollapse}>
+          <i className={`fas fa-chevron-${collapsed ? 'right' : 'left'}`}></i>
+        </CollapseButton>
       </SidebarHeader>
       
-      <FileExplorer>
-        {files.map((file) => (
-          file.isDirectory ? (
-            <DirectoryItem 
-              key={file.path}
-              isSelected={selectedFile === file.path}
-              onClick={() => handleDirectoryClick(file.path)}
-            >
-              <FolderIcon>📁</FolderIcon>
-              {file.name}
-            </DirectoryItem>
-          ) : (
-            <FileItem 
-              key={file.path}
-              isSelected={currentFile === file.path}
-              onClick={() => handleFileClick(file.path)}
-            >
-              <FileIcon>📄</FileIcon>
-              {file.name}
-            </FileItem>
-          )
+      <SidebarContent>
+        {items.map(item => (
+          <SidebarItem 
+            key={item.id}
+            id={item.id}
+            label={item.label}
+            icon={item.icon}
+            onClick={item.onClick}
+            active={item.active}
+            collapsed={collapsed}
+          />
         ))}
-      </FileExplorer>
-      
-      <SidebarFooter>
-        <Button 
-          variant="secondary" 
-          size="small" 
-          fullWidth 
-          onClick={onCreateFile}
-          leftIcon={<span>+</span>}
-        >
-          New File
-        </Button>
-        <Button 
-          variant="secondary" 
-          size="small" 
-          fullWidth 
-          onClick={onCreateFolder}
-          leftIcon={<span>+</span>}
-        >
-          New Folder
-        </Button>
-      </SidebarFooter>
+      </SidebarContent>
     </SidebarContainer>
   );
 };

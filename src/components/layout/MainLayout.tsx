@@ -1,8 +1,25 @@
-// src/components/layout/MainLayout.tsx
-import React from 'react';
+import React, { ReactNode } from 'react';
 import styled from 'styled-components';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import { User } from '../../types';
+
+export interface MainLayoutProps {
+  children: ReactNode;
+  user?: User;
+  onLogout?: () => void;
+  onThemeToggle?: () => void;
+  isDarkTheme?: boolean;
+  projectName?: string;
+  sidebarItems?: Array<{
+    id: string;
+    label: string;
+    icon: string;
+    onClick?: () => void;
+    active?: boolean;
+  }>;
+  className?: string;
+}
 
 const LayoutContainer = styled.div`
   display: flex;
@@ -10,6 +27,8 @@ const LayoutContainer = styled.div`
   height: 100vh;
   width: 100%;
   overflow: hidden;
+  background-color: var(--app-bg, #f5f5f5);
+  color: var(--text-color, #333);
 `;
 
 const ContentContainer = styled.div`
@@ -21,38 +40,33 @@ const ContentContainer = styled.div`
 const MainContent = styled.main`
   flex: 1;
   overflow: auto;
-  background-color: #252526;
-  color: #e0e0e0;
+  padding: 16px;
 `;
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
-
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const [showCreateFileModal, setShowCreateFileModal] = React.useState(false);
-  const [showCreateFolderModal, setShowCreateFolderModal] = React.useState(false);
-  
-  const handleCreateFile = () => {
-    setShowCreateFileModal(true);
-  };
-  
-  const handleCreateFolder = () => {
-    setShowCreateFolderModal(true);
-  };
-  
+const MainLayout: React.FC<MainLayoutProps> = ({
+  children,
+  user,
+  onLogout,
+  onThemeToggle,
+  isDarkTheme = true,
+  projectName,
+  sidebarItems = [],
+  className,
+}) => {
   return (
-    <LayoutContainer>
-      <Header />
+    <LayoutContainer className={className}>
+      <Header 
+        user={user}
+        onLogout={onLogout}
+        onThemeToggle={onThemeToggle}
+        isDarkTheme={isDarkTheme}
+        projectName={projectName}
+      />
+      
       <ContentContainer>
-        <Sidebar 
-          onCreateFile={handleCreateFile}
-          onCreateFolder={handleCreateFolder}
-        />
+        <Sidebar items={sidebarItems} />
         <MainContent>{children}</MainContent>
       </ContentContainer>
-      
-      {/* Modals would be implemented here */}
     </LayoutContainer>
   );
 };

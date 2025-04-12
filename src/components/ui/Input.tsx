@@ -1,27 +1,36 @@
-// src/components/ui/Input.tsx
-import React, { forwardRef } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps {
+  type?: 'text' | 'password' | 'email' | 'number' | 'search';
+  placeholder?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
+  required?: boolean;
+  name?: string;
+  id?: string;
   label?: string;
   error?: string;
-  fullWidth?: boolean;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
+  className?: string;
+  autoFocus?: boolean;
+  icon?: React.ReactNode;
 }
 
-const InputContainer = styled.div<{ fullWidth?: boolean }>`
+const InputContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin-bottom: 16px;
-  width: ${({ fullWidth }) => (fullWidth ? '100%' : 'auto')};
+  width: 100%;
 `;
 
 const InputLabel = styled.label`
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 14px;
   margin-bottom: 6px;
-  color: #333;
+  color: var(--text-color, #333);
+  font-weight: 500;
 `;
 
 const InputWrapper = styled.div`
@@ -30,69 +39,94 @@ const InputWrapper = styled.div`
   align-items: center;
 `;
 
-const StyledInput = styled.input<{ hasError?: boolean; hasLeftIcon?: boolean; hasRightIcon?: boolean }>`
-  padding: 10px 12px;
-  font-size: 1rem;
-  border: 1px solid ${({ hasError }) => (hasError ? '#e53935' : '#e0e0e0')};
-  border-radius: 4px;
-  outline: none;
-  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+const StyledInput = styled.input<{ hasError?: boolean; hasIcon?: boolean }>`
   width: 100%;
-  
-  ${({ hasLeftIcon }) => hasLeftIcon && 'padding-left: 36px;'}
-  ${({ hasRightIcon }) => hasRightIcon && 'padding-right: 36px;'}
+  padding: 10px 12px;
+  padding-left: ${props => props.hasIcon ? '36px' : '12px'};
+  font-size: 14px;
+  border: 1px solid ${props => props.hasError ? 'var(--error-color, #e53935)' : 'var(--border-color, #ddd)'};
+  border-radius: 4px;
+  background-color: var(--input-bg, #fff);
+  color: var(--text-color, #333);
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   
   &:focus {
-    border-color: ${({ hasError }) => (hasError ? '#e53935' : '#4a6cf7')};
-    box-shadow: 0 0 0 2px ${({ hasError }) => (hasError ? 'rgba(229, 57, 53, 0.2)' : 'rgba(74, 108, 247, 0.2)')};
+    outline: none;
+    border-color: ${props => props.hasError ? 'var(--error-color, #e53935)' : 'var(--primary-color, #4a6cf7)'};
+    box-shadow: 0 0 0 2px ${props => props.hasError ? 'rgba(229, 57, 53, 0.2)' : 'rgba(74, 108, 247, 0.2)'};
   }
   
   &:disabled {
-    background-color: #f5f5f5;
+    background-color: var(--disabled-bg, #f5f5f5);
     cursor: not-allowed;
+    opacity: 0.7;
+  }
+  
+  &::placeholder {
+    color: var(--placeholder-color, #aaa);
   }
 `;
 
-const IconContainer = styled.div<{ position: 'left' | 'right' }>`
+const IconWrapper = styled.div`
   position: absolute;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  ${({ position }) => (position === 'left' ? 'left: 12px;' : 'right: 12px;')}
-  color: #757575;
+  color: var(--icon-color, #666);
   display: flex;
   align-items: center;
   justify-content: center;
 `;
 
 const ErrorMessage = styled.div`
-  color: #e53935;
-  font-size: 0.75rem;
+  color: var(--error-color, #e53935);
+  font-size: 12px;
   margin-top: 4px;
 `;
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, fullWidth, leftIcon, rightIcon, ...rest }, ref) => {
-    return (
-      <InputContainer fullWidth={fullWidth}>
-        {label && <InputLabel>{label}</InputLabel>}
-        <InputWrapper>
-          {leftIcon && <IconContainer position="left">{leftIcon}</IconContainer>}
-          <StyledInput
-            ref={ref}
-            hasError={!!error}
-            hasLeftIcon={!!leftIcon}
-            hasRightIcon={!!rightIcon}
-            aria-invalid={!!error}
-            {...rest}
-          />
-          {rightIcon && <IconContainer position="right">{rightIcon}</IconContainer>}
-        </InputWrapper>
-        {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
-      </InputContainer>
-    );
-  }
-);
-
-Input.displayName = 'Input';
+const Input: React.FC<InputProps> = ({
+  type = 'text',
+  placeholder,
+  value,
+  onChange,
+  onBlur,
+  onFocus,
+  disabled = false,
+  required = false,
+  name,
+  id,
+  label,
+  error,
+  className,
+  autoFocus = false,
+  icon,
+  ...props
+}) => {
+  return (
+    <InputContainer className={className}>
+      {label && <InputLabel htmlFor={id || name}>{label}{required && <span style={{ color: 'var(--error-color, #e53935)' }}>*</span>}</InputLabel>}
+      <InputWrapper>
+        {icon && <IconWrapper>{icon}</IconWrapper>}
+        <StyledInput
+          type={type}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          disabled={disabled}
+          required={required}
+          name={name}
+          id={id || name}
+          autoFocus={autoFocus}
+          hasError={!!error}
+          hasIcon={!!icon}
+          {...props}
+        />
+      </InputWrapper>
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+    </InputContainer>
+  );
+};
 
 export default Input;

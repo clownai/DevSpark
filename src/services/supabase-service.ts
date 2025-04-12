@@ -1,6 +1,6 @@
 // DevSpark IDE - Supabase Service
 // This service handles authentication and database operations using Supabase
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { User, AuthState } from '../types';
 
 class SupabaseService {
@@ -34,58 +34,41 @@ class SupabaseService {
     }
     
     // Initialize auth state from local storage
-    private initializeAuthState(): void {
-        const session = this.supabase.auth.session();
+    private async initializeAuthState(): Promise<void> {
+        // Updated to use getSession() instead of session()
+        const { data: { session } } = await this.supabase.auth.getSession();
         
         if (session && session.user) {
             this.authState = {
                 isAuthenticated: true,
-                user: this.formatUser(session.user),
-                session
+                user: this.formatUser(session.user)
             };
         }
     }
     
     // Handle auth state changes
-    private handleAuthStateChange(event: string, session: any): void {
+    private handleAuthStateChange(event: string, session: Session | null): void {
         if (event === 'SIGNED_IN' && session) {
             this.authState = {
                 isAuthenticated: true,
-                user: this.formatUser(session.user),
-                session
+                user: this.formatUser(session.user)
             };
-            
-            // Dispatch auth state change event
-            this.dispatchAuthStateChangeEvent();
         } else if (event === 'SIGNED_OUT') {
             this.authState = {
                 isAuthenticated: false
             };
-            
-            // Dispatch auth state change event
-            this.dispatchAuthStateChangeEvent();
         }
     }
     
-    // Format user object
-    private formatUser(user: any): User {
+    // Format user data
+    private formatUser(user: SupabaseUser): User {
         return {
             id: user.id,
-            email: user.email,
+            email: user.email || '',
             name: user.user_metadata?.name,
             avatar_url: user.user_metadata?.avatar_url,
-            created_at: user.created_at,
-            last_sign_in: user.last_sign_in_at
+            created_at: user.created_at
         };
-    }
-    
-    // Dispatch auth state change event
-    private dispatchAuthStateChangeEvent(): void {
-        const event = new CustomEvent('authStateChange', {
-            detail: this.authState
-        });
-        
-        window.dispatchEvent(event);
     }
     
     // Get current auth state
@@ -96,18 +79,23 @@ class SupabaseService {
     // Sign in with email and password
     async signInWithEmail(email: string, password: string): Promise<AuthState> {
         try {
-            const { user, session, error } = await this.supabase.auth.signIn({
+            // Updated to use signInWithPassword instead of signIn
+            const { data, error } = await this.supabase.auth.signInWithPassword({
                 email,
                 password
             });
             
-            if (error) {
-                throw error;
+            if (error) throw new Error(error.message);
+            
+            if (data.user) {
+                this.authState = {
+                    isAuthenticated: true,
+                    user: this.formatUser(data.user)
+                };
             }
             
             return this.authState;
         } catch (error) {
-            console.error('Sign in error:', error);
             this.authState = {
                 isAuthenticated: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
@@ -118,27 +106,27 @@ class SupabaseService {
     }
     
     // Sign up with email and password
-    async signUpWithEmail(email: string, password: string, name?: string): Promise<AuthState> {
+    async signUpWithEmail(email: string, password: string, userData?: Record<string, any>): Promise<AuthState> {
         try {
-            const { user, session, error } = await this.supabase.auth.signUp(
-                {
-                    email,
-                    password
-                },
-                {
-                    data: {
-                        name
-                    }
+            const { data, error } = await this.supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: userData
                 }
-            );
+            });
             
-            if (error) {
-                throw error;
+            if (error) throw new Error(error.message);
+            
+            if (data.user) {
+                this.authState = {
+                    isAuthenticated: true,
+                    user: this.formatUser(data.user)
+                };
             }
             
             return this.authState;
         } catch (error) {
-            console.error('Sign up error:', error);
             this.authState = {
                 isAuthenticated: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
@@ -151,11 +139,58 @@ class SupabaseService {
     // Sign out
     async signOut(): Promise<void> {
         await this.supabase.auth.signOut();
+        
+        this.authState = {
+            isAuthenticated: false
+        };
     }
     
-    // Get Supabase client instance
-    getClient(): SupabaseClient {
-        return this.supabase;
+    // Reset password
+    async resetPassword(email: string): Promise<{ success: boolean; message: string }> {
+        try {
+            const { error } = await this.supabase.auth.resetPasswordForEmail(email);
+            
+            if (error) throw new Error(error.message);
+            
+            return {
+                success: true,
+                message: 'Password reset email sent'
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: error instanceof Error ? error.message : 'Unknown error'
+            };
+        }
+    }
+    
+    // Update user profile
+    async updateProfile(userData: Partial<User>): Promise<{ success: boolean; message: string }> {
+        try {
+            const { error } = await this.supabase.auth.updateUser({
+                data: userData
+            });
+            
+            if (error) throw new Error(error.message);
+            
+            // Update local auth state
+            if (this.authState.user) {
+                this.authState.user = {
+                    ...this.authState.user,
+                    ...userData
+                };
+            }
+            
+            return {
+                success: true,
+                message: 'Profile updated successfully'
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: error instanceof Error ? error.message : 'Unknown error'
+            };
+        }
     }
 }
 

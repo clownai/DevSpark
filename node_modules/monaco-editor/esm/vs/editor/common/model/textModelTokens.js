@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { runWhenIdle } from '../../../base/common/async.js';
+import { runWhenGlobalIdle } from '../../../base/common/async.js';
 import { BugIndicatingError, onUnexpectedError } from '../../../base/common/errors.js';
 import { setTimeout0 } from '../../../base/common/platform.js';
 import { StopWatch } from '../../../base/common/stopwatch.js';
@@ -81,6 +81,10 @@ export class TokenizerWithStateStoreAndTextModel extends TokenizerWithStateStore
         const result = safeTokenize(this._languageIdCodec, languageId, this.tokenizationSupport, newLineContent, true, lineStartState);
         const lineTokens = new LineTokens(result.tokens, newLineContent, this._languageIdCodec);
         return lineTokens;
+    }
+    hasAccurateTokensForLine(lineNumber) {
+        const firstInvalidLineNumber = this.store.getFirstInvalidEndStateLineNumberOrMax();
+        return (lineNumber < firstInvalidLineNumber);
     }
     isCheapToTokenize(lineNumber) {
         const firstInvalidLineNumber = this.store.getFirstInvalidEndStateLineNumberOrMax();
@@ -345,7 +349,7 @@ export class DefaultBackgroundTokenizer {
             return;
         }
         this._isScheduled = true;
-        runWhenIdle((deadline) => {
+        runWhenGlobalIdle((deadline) => {
             this._isScheduled = false;
             this._backgroundTokenizeWithDeadline(deadline);
         });
@@ -404,8 +408,7 @@ export class DefaultBackgroundTokenizer {
         return !this._tokenizerWithStateStore.store.allStatesValid();
     }
     _tokenizeOneInvalidLine(builder) {
-        var _a;
-        const firstInvalidLine = (_a = this._tokenizerWithStateStore) === null || _a === void 0 ? void 0 : _a.getFirstInvalidLine();
+        const firstInvalidLine = this._tokenizerWithStateStore?.getFirstInvalidLine();
         if (!firstInvalidLine) {
             return this._tokenizerWithStateStore._textModel.getLineCount() + 1;
         }

@@ -19,8 +19,7 @@ class PagedRenderer {
         return { data, disposable: Disposable.None };
     }
     renderElement(index, _, data, height) {
-        var _a;
-        (_a = data.disposable) === null || _a === void 0 ? void 0 : _a.dispose();
+        data.disposable?.dispose();
         if (!data.data) {
             return;
         }
@@ -62,7 +61,10 @@ class PagedAccessibilityProvider {
     }
 }
 function fromPagedListOptions(modelProvider, options) {
-    return Object.assign(Object.assign({}, options), { accessibilityProvider: options.accessibilityProvider && new PagedAccessibilityProvider(modelProvider, options.accessibilityProvider) });
+    return {
+        ...options,
+        accessibilityProvider: options.accessibilityProvider && new PagedAccessibilityProvider(modelProvider, options.accessibilityProvider)
+    };
 }
 export class PagedList {
     constructor(user, container, virtualDelegate, renderers, options = {}) {

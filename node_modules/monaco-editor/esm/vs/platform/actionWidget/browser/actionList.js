@@ -7,15 +7,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -45,8 +36,7 @@ class HeaderRenderer {
         return { container, text };
     }
     renderElement(element, _index, templateData) {
-        var _a, _b;
-        templateData.text.textContent = (_b = (_a = element.group) === null || _a === void 0 ? void 0 : _a.title) !== null && _b !== void 0 ? _b : '';
+        templateData.text.textContent = element.group?.title ?? '';
     }
     disposeTemplate(_templateData) {
         // noop
@@ -70,8 +60,7 @@ let ActionItemRenderer = class ActionItemRenderer {
         return { container, icon, text, keybinding };
     }
     renderElement(element, _index, data) {
-        var _a, _b, _c;
-        if ((_a = element.group) === null || _a === void 0 ? void 0 : _a.icon) {
+        if (element.group?.icon) {
             data.icon.className = ThemeIcon.asClassName(element.group.icon);
             if (element.group.icon.color) {
                 data.icon.style.color = asCssVariable(element.group.icon.color.id);
@@ -87,18 +76,18 @@ let ActionItemRenderer = class ActionItemRenderer {
         data.text.textContent = stripNewlines(element.label);
         data.keybinding.set(element.keybinding);
         dom.setVisibility(!!element.keybinding, data.keybinding.element);
-        const actionTitle = (_b = this._keybindingService.lookupKeybinding(acceptSelectedActionCommand)) === null || _b === void 0 ? void 0 : _b.getLabel();
-        const previewTitle = (_c = this._keybindingService.lookupKeybinding(previewSelectedActionCommand)) === null || _c === void 0 ? void 0 : _c.getLabel();
+        const actionTitle = this._keybindingService.lookupKeybinding(acceptSelectedActionCommand)?.getLabel();
+        const previewTitle = this._keybindingService.lookupKeybinding(previewSelectedActionCommand)?.getLabel();
         data.container.classList.toggle('option-disabled', element.disabled);
         if (element.disabled) {
             data.container.title = element.label;
         }
         else if (actionTitle && previewTitle) {
             if (this._supportsPreview && element.canPreview) {
-                data.container.title = localize({ key: 'label-preview', comment: ['placeholders are keybindings, e.g "F2 to apply, Shift+F2 to preview"'] }, "{0} to apply, {1} to preview", actionTitle, previewTitle);
+                data.container.title = localize({ key: 'label-preview', comment: ['placeholders are keybindings, e.g "F2 to Apply, Shift+F2 to Preview"'] }, "{0} to Apply, {1} to Preview", actionTitle, previewTitle);
             }
             else {
-                data.container.title = localize({ key: 'label', comment: ['placeholder is a keybinding, e.g "F2 to apply"'] }, "{0} to apply", actionTitle);
+                data.container.title = localize({ key: 'label', comment: ['placeholder is a keybinding, e.g "F2 to Apply"'] }, "{0} to Apply", actionTitle);
             }
         }
         else {
@@ -106,7 +95,7 @@ let ActionItemRenderer = class ActionItemRenderer {
         }
     }
     disposeTemplate(_templateData) {
-        // noop
+        _templateData.keybinding.dispose();
     }
 };
 ActionItemRenderer = __decorate([
@@ -150,7 +139,7 @@ let ActionList = class ActionList extends Disposable {
             accessibilityProvider: {
                 getAriaLabel: element => {
                     if (element.kind === "action" /* ActionListItemKind.Action */) {
-                        let label = element.label ? stripNewlines(element === null || element === void 0 ? void 0 : element.label) : '';
+                        let label = element.label ? stripNewlines(element?.label) : '';
                         if (element.disabled) {
                             label = localize({ key: 'customQuickFixWidget.labels', comment: [`Action widget labels for accessibility.`] }, "{0}, Disabled Reason: {1}", label, element.disabled);
                         }
@@ -188,25 +177,31 @@ let ActionList = class ActionList extends Disposable {
         const itemsHeight = this._allMenuItems.length * this._actionLineHeight;
         const heightWithHeaders = itemsHeight + numHeaders * this._headerLineHeight - numHeaders * this._actionLineHeight;
         this._list.layout(heightWithHeaders);
-        // For finding width dynamically (not using resize observer)
-        const itemWidths = this._allMenuItems.map((_, index) => {
-            const element = document.getElementById(this._list.getElementID(index));
-            if (element) {
-                element.style.width = 'auto';
-                const width = element.getBoundingClientRect().width;
-                element.style.width = '';
-                return width;
-            }
-            return 0;
-        });
-        // resize observer - can be used in the future since list widget supports dynamic height but not width
-        const width = Math.max(...itemWidths, minWidth);
+        let maxWidth = minWidth;
+        if (this._allMenuItems.length >= 50) {
+            maxWidth = 380;
+        }
+        else {
+            // For finding width dynamically (not using resize observer)
+            const itemWidths = this._allMenuItems.map((_, index) => {
+                const element = this.domNode.ownerDocument.getElementById(this._list.getElementID(index));
+                if (element) {
+                    element.style.width = 'auto';
+                    const width = element.getBoundingClientRect().width;
+                    element.style.width = '';
+                    return width;
+                }
+                return 0;
+            });
+            // resize observer - can be used in the future since list widget supports dynamic height but not width
+            maxWidth = Math.max(...itemWidths, minWidth);
+        }
         const maxVhPrecentage = 0.7;
-        const height = Math.min(heightWithHeaders, document.body.clientHeight * maxVhPrecentage);
-        this._list.layout(height, width);
+        const height = Math.min(heightWithHeaders, this.domNode.ownerDocument.body.clientHeight * maxVhPrecentage);
+        this._list.layout(height, maxWidth);
         this.domNode.style.height = `${height}px`;
         this._list.domFocus();
-        return width;
+        return maxWidth;
     }
     focusPrevious() {
         this._list.focusPrevious(1, true, undefined, this.focusCondition);
@@ -240,30 +235,26 @@ let ActionList = class ActionList extends Disposable {
         }
     }
     onFocus() {
-        var _a, _b;
-        this._list.domFocus();
         const focused = this._list.getFocus();
         if (focused.length === 0) {
             return;
         }
         const focusIndex = focused[0];
         const element = this._list.element(focusIndex);
-        (_b = (_a = this._delegate).onFocus) === null || _b === void 0 ? void 0 : _b.call(_a, element.item);
+        this._delegate.onFocus?.(element.item);
     }
-    onListHover(e) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const element = e.element;
-            if (element && element.item && this.focusCondition(element)) {
-                if (this._delegate.onHover && !element.disabled && element.kind === "action" /* ActionListItemKind.Action */) {
-                    const result = yield this._delegate.onHover(element.item, this.cts.token);
-                    element.canPreview = result ? result.canPreview : undefined;
-                }
-                if (e.index) {
-                    this._list.splice(e.index, 1, [element]);
-                }
+    async onListHover(e) {
+        const element = e.element;
+        if (element && element.item && this.focusCondition(element)) {
+            if (this._delegate.onHover && !element.disabled && element.kind === "action" /* ActionListItemKind.Action */) {
+                const result = await this._delegate.onHover(element.item, this.cts.token);
+                element.canPreview = result ? result.canPreview : undefined;
             }
-            this._list.setFocus(typeof e.index === 'number' ? [e.index] : []);
-        });
+            if (e.index) {
+                this._list.splice(e.index, 1, [element]);
+            }
+        }
+        this._list.setFocus(typeof e.index === 'number' ? [e.index] : []);
     }
     onListClick(e) {
         if (e.element && this.focusCondition(e.element)) {

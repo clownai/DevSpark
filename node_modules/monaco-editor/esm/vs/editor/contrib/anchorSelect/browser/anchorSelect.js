@@ -11,15 +11,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var SelectionAnchorController_1;
 import { alert } from '../../../../base/browser/ui/aria/aria.js';
 import { MarkdownString } from '../../../../base/common/htmlContent.js';
@@ -31,7 +22,9 @@ import { EditorContextKeys } from '../../../common/editorContextKeys.js';
 import { localize } from '../../../../nls.js';
 import { IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
 export const SelectionAnchorSet = new RawContextKey('selectionAnchorSet', false);
-let SelectionAnchorController = SelectionAnchorController_1 = class SelectionAnchorController {
+let SelectionAnchorController = class SelectionAnchorController {
+    static { SelectionAnchorController_1 = this; }
+    static { this.ID = 'editor.contrib.selectionAnchorController'; }
     static get(editor) {
         return editor.getContribution(SelectionAnchorController_1.ID);
     }
@@ -91,7 +84,6 @@ let SelectionAnchorController = SelectionAnchorController_1 = class SelectionAnc
         this.modelChangeListener.dispose();
     }
 };
-SelectionAnchorController.ID = 'editor.contrib.selectionAnchorController';
 SelectionAnchorController = SelectionAnchorController_1 = __decorate([
     __param(1, IContextKeyService)
 ], SelectionAnchorController);
@@ -109,11 +101,8 @@ class SetSelectionAnchor extends EditorAction {
             }
         });
     }
-    run(_accessor, editor) {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            (_a = SelectionAnchorController.get(editor)) === null || _a === void 0 ? void 0 : _a.setSelectionAnchor();
-        });
+    async run(_accessor, editor) {
+        SelectionAnchorController.get(editor)?.setSelectionAnchor();
     }
 }
 class GoToSelectionAnchor extends EditorAction {
@@ -125,11 +114,8 @@ class GoToSelectionAnchor extends EditorAction {
             precondition: SelectionAnchorSet,
         });
     }
-    run(_accessor, editor) {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            (_a = SelectionAnchorController.get(editor)) === null || _a === void 0 ? void 0 : _a.goToSelectionAnchor();
-        });
+    async run(_accessor, editor) {
+        SelectionAnchorController.get(editor)?.goToSelectionAnchor();
     }
 }
 class SelectFromAnchorToCursor extends EditorAction {
@@ -146,11 +132,8 @@ class SelectFromAnchorToCursor extends EditorAction {
             }
         });
     }
-    run(_accessor, editor) {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            (_a = SelectionAnchorController.get(editor)) === null || _a === void 0 ? void 0 : _a.selectFromAnchorToCursor();
-        });
+    async run(_accessor, editor) {
+        SelectionAnchorController.get(editor)?.selectFromAnchorToCursor();
     }
 }
 class CancelSelectionAnchor extends EditorAction {
@@ -167,11 +150,8 @@ class CancelSelectionAnchor extends EditorAction {
             }
         });
     }
-    run(_accessor, editor) {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            (_a = SelectionAnchorController.get(editor)) === null || _a === void 0 ? void 0 : _a.cancelSelectionAnchor();
-        });
+    async run(_accessor, editor) {
+        SelectionAnchorController.get(editor)?.cancelSelectionAnchor();
     }
 }
 registerEditorContribution(SelectionAnchorController.ID, SelectionAnchorController, 4 /* EditorContributionInstantiation.Lazy */);
